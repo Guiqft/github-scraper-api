@@ -3,11 +3,15 @@ export interface IFile {
     extension: string,
     url: string,
     isFolder: boolean,
-    lines?: number,
-    bytes?: number
+    size: ISize
 }
 
 export interface IRepository {
     name: string,
     owner: string
+}
+
+export interface ISize {
+    lines?: number,
+    bytes?: number
 }
