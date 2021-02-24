@@ -8,6 +8,7 @@ const app = express();
 
 app.use(express.json())
 app.use(cors())
+
 app.get(
     '/github-repository-size',
     query('url').notEmpty().isString().customSanitizer(checkGithubUrl),
