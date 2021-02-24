@@ -3,7 +3,6 @@ import { validationResult } from 'express-validator'
 import Scraper from '../scraper'
 import Cache from '../cache'
 import Logger from '../logger'
-import { IFile } from '../types'
 
 export const GithubSizeController = async (req: Request, res: Response) => {
     try {
@@ -24,8 +23,6 @@ export const GithubSizeController = async (req: Request, res: Response) => {
         if (cachedList) {
             Logger.info('Cache found!')
             fileList = JSON.parse(cachedList)
-
-            return res.status(200).json(fileList)
         }
 
         // If hasn't cache, do the job
@@ -33,9 +30,9 @@ export const GithubSizeController = async (req: Request, res: Response) => {
             Logger.info('Cache not found')
             const githubScraper = new Scraper(repositoryUrl)
             fileList = await githubScraper.run()
-
-            return res.status(200).json(fileList)
         }
+
+        return res.status(200).json(fileList)
     } catch (e) {
         return res.status(400).json({ error: e.message })
     }

@@ -7,8 +7,9 @@
     "prepare": "tsc",
     "build": "tsc",
     "start": "ts-node server.ts",
+    "dev": "nodemon --watch ./ --exec 'ts-node' server.ts",
     "install-check": "echo Installed successfully",
-    "dev": "nodemon --watch ./ --exec 'ts-node' server.ts"
+    "test": "npx jest --silent"
   },
   "dependencies": {
     "async-redis": "^1.1.7",
