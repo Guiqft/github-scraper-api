@@ -49,7 +49,7 @@ export default class Scraper {
 
         // Setting the cache for this repository
         Logger.info('Saving page on cache')
-        await Cache.client.set(this.repository.url, JSON.stringify(grouped))
+        await Cache.client.set(this.repository.url, JSON.stringify(grouped), 'EX', 5 * 60 /** 5 minutes to live */)
 
         return grouped
     }
