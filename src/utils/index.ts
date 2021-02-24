@@ -22,6 +22,15 @@ export const checkGithubUrl = async (url: string) => {
             }
         }
 
+        // Container http://
+        else if (url.includes('http://')) {
+            // Contains  http://github.com/something-else 
+            if ((url.match(/^http:\/\/github\.com\/(.+)/) || []).length > 1) {
+                // Return url without corrections 
+                return Promise.resolve(url)
+            }
+        }
+
         // Contains just github.com/something-else 
         else if ((url.match(/^github\.com\/(.+)/) || []).length > 1) {
             // Concat https:// on start 
@@ -60,7 +69,8 @@ export const getFilesRows = (filesPage: HTMLElement) => {
     var rows = fileTableElement.querySelectorAll('div[role=row]').slice(1)
 
     rows = rows.filter(row => {
-        const anchorTag = row.querySelector('a.js-navigation-open')
+        let anchorTag = row.querySelector('a.js-navigation-open')
+        if (!anchorTag) return false
 
         return !anchorTag.attributes.title.includes('Go to parent directory')
     })
@@ -87,21 +97,23 @@ export const getInfosFromPage = (page: HTMLElement): IFile[] => {
 
         // Getting file infos from <a /> tag 
         const anchorTag = row.querySelector('a.js-navigation-open')
-        const name = anchorTag.rawText
+        if (anchorTag) {
+            const name = anchorTag.rawText
 
-        // Regex to take everything after last dot 
-        const extension = (name.match('([^\.]+$)') || [])[1]
+            // Regex to take everything after last dot 
+            const extension = (name.match('([^\.]+$)') || [])[1]
 
-        // Removing repo name from url 
-        const url = anchorTag.attributes.href.split('/').slice(3).join('/')
+            // Removing repo name from url 
+            const url = anchorTag.attributes.href.split('/').slice(3).join('/')
 
-        fileList.push({
-            name,
-            extension,
-            url,
-            isFolder,
-            size: {}
-        })
+            fileList.push({
+                name,
+                extension,
+                url,
+                isFolder,
+                size: {}
+            })
+        }
     }
 
     return fileList
