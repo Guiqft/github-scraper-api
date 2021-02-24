@@ -1,6 +1,5 @@
 import { HTMLElement } from "node-html-parser"
 import { IFile, ISize } from "../types"
-import { Request } from 'express'
 
 /**
  * Verify the github repository url and, 
@@ -41,6 +40,7 @@ export const checkGithubUrl = async (url: string) => {
  */
 export const getRepoInfo = (url: string) => {
     return {
+        url,
         name: (url.match(/^https:\/\/github\.com\/(.+)\/(.+)/) || [])[2],
         owner: (url.match(/^https:\/\/github\.com\/(.+)\/(.+)/) || [])[1]
     }
@@ -169,4 +169,22 @@ export const parseBytes = (bytesText: string): number => {
 
     // Returns multiplying by scale
     return bytesNumber * multiplier
+}
+
+export const groupByExtension = (fileList: IFile[]): any[] => {
+    const extensionList = fileList.map(({ extension }) => extension)
+
+    var result: any = {}
+
+    for (const extension of extensionList) {
+        result[extension as any] = {
+            lines: 0,
+            bytes: 0
+        }
+
+        fileList.filter((file) => file.extension === extension).map(({ size }) => result[extension as any].lines += size.lines)
+        fileList.filter((file) => file.extension === extension).map(({ size }) => result[extension as any].bytes += size.bytes)
+    }
+
+    return result
 }

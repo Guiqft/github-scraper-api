@@ -2,6 +2,7 @@ import { Request, Response } from 'express'
 import { validationResult } from 'express-validator'
 import Scraper from '../scraper'
 import Cache from '../cache'
+import Logger from '../logger'
 import { IFile } from '../types'
 
 export const GithubSizeController = async (req: Request, res: Response) => {
@@ -15,25 +16,26 @@ export const GithubSizeController = async (req: Request, res: Response) => {
         // Setting repository URL
         const repositoryUrl = req.query.url as string
 
+        var fileList = []
         // Trying to retrieve cache
-        let cachedFileList: IFile[] = []
-        Cache.client.get(repositoryUrl, (error, value) => {
-            if (value) {
-                cachedFileList = JSON.parse(value)
+        Logger.info(`Checking if exists cache for ${repositoryUrl}`)
+        const cachedList = await Cache.client.get(repositoryUrl)
 
-                // If has cache, returns the list
-                return res.status(200).json({ cachedFileList })
-            }
-        })
+        if (cachedList) {
+            Logger.info('Cache found!')
+            fileList = JSON.parse(cachedList)
+
+            return res.status(200).json(fileList)
+        }
 
         // If hasn't cache, do the job
-        const githubScraper = new Scraper(repositoryUrl)
-        const fileList = await githubScraper.getFiles()
-        await githubScraper.getFilesSize(fileList)
+        else {
+            Logger.info('Cache not found')
+            const githubScraper = new Scraper(repositoryUrl)
+            fileList = await githubScraper.run()
 
-        // Setting the cache for this repository
-        Cache.client.set(repositoryUrl, JSON.stringify(fileList))
-        return res.status(200).json({ fileList })
+            return res.status(200).json(fileList)
+        }
     } catch (e) {
         return res.status(400).json({ error: e.message })
     }

@@ -1,7 +1,9 @@
 import { parse, HTMLElement } from 'node-html-parser';
-import { getRepoInfo, getSizeFromPage, getInfosFromPage } from '../utils'
+import { getRepoInfo, getSizeFromPage, getInfosFromPage, groupByExtension } from '../utils'
 import { IFile, IRepository } from '../types'
 import Service from '../service';
+import Logger from '../logger';
+import Cache from '../cache';
 
 /**
  * Main scraper class to be instacied with the github repository url.
@@ -23,10 +25,33 @@ export default class Scraper {
      * @param {string} repositoryUrl The github repository url to be scraped.
      */
     constructor (repositoryUrl: string) {
+        Logger.info(`Creating new scraper for ${repositoryUrl}`)
         this.service = new Service(repositoryUrl)
 
         // Getting the infos from repository url
         this.repository = getRepoInfo(repositoryUrl)
+    }
+
+    /**
+     * Function to run all the script into the github repository page to get the sizes
+     * @return The sizes grouped by extensions
+     * @memberof Scraper
+     */
+    async run () {
+        Logger.info('Getting file list')
+        const fileList = await this.getFiles()
+
+        Logger.info('Getting files sizes')
+        await this.getFilesSize(fileList)
+
+        Logger.info('Grouping by extensions')
+        const grouped = groupByExtension(fileList)
+
+        // Setting the cache for this repository
+        Logger.info('Saving page on cache')
+        await Cache.client.set(this.repository.url, JSON.stringify(grouped))
+
+        return grouped
     }
 
     /**
@@ -35,7 +60,7 @@ export default class Scraper {
      * @return The fetched fileList.
      * @memberof Scraper
      */
-    async getFiles (page?: HTMLElement): Promise<IFile[]> {
+    private async getFiles (page?: HTMLElement): Promise<IFile[]> {
         let fileList: IFile[] = []
 
         // If page wasn't passed
@@ -71,7 +96,7 @@ export default class Scraper {
      * @param fileList The file list to get the sizes.
      * @memberof Scraper
      */
-    async getFilesSize (fileList: IFile[]) {
+    private async getFilesSize (fileList: IFile[]) {
         // Declaring batch size
         var nElements = Math.min(100, fileList.length)
         const nFiles = fileList.length

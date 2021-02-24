@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from 'axios'
+import Logger from '../logger'
 
 export default class Service {
     client: AxiosInstance
@@ -20,6 +21,7 @@ export default class Service {
     async fetch (pageUrl: string) {
         if (process.env.DEBUG) { console.log('Fetching', pageUrl) }
         try {
+            Logger.info(`Fetching ${pageUrl}`)
             return this.client.get(pageUrl)
         }
         catch (e) {

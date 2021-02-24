@@ -1,4 +1,4 @@
-import redis from 'redis'
+import asyncRedis from 'async-redis'
 import { load } from 'ts-dotenv';
 
 const env = load({
@@ -8,10 +8,10 @@ const env = load({
 });
 
 class Cache {
-    client: redis.RedisClient
+    client: any
 
     constructor () {
-        this.client = redis.createClient({
+        this.client = asyncRedis.createClient({
             host: env.REDIS_HOST,
             port: env.REDIS_PORT,
             password: env.REDIS_KEY,

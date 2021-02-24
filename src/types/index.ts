@@ -8,7 +8,8 @@ export interface IFile {
 
 export interface IRepository {
     name: string,
-    owner: string
+    owner: string,
+    url: string
 }
 
 export interface ISize {
